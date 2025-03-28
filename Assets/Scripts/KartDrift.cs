@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class KartDrift : MonoBehaviour
 {
+    [SerializeField]
+    private string driftInput;
     public float driftFactor = 2f;
     private float normalTurnSpeed;
     public float turnSpeed = 50f;
@@ -15,7 +17,7 @@ public class KartDrift : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetButtonDown(driftInput))
         {
             currentTurnSpeed = turnSpeed * driftFactor;
         }

@@ -5,6 +5,10 @@ public class KartController : MonoBehaviour
 {
     public int playerIndex = 0; // Indice du joueur (0 pour le premier, 1 pour le deuxième, etc.)
 
+    //mapping
+    [SerializeField]
+    private string AccelerateInput, TurnInput, FireInput, driftInput;
+
     public GameObject mushroomUI;
     public GameObject bananaUI;
     private bool hasBoost = false;
@@ -38,18 +42,16 @@ public class KartController : MonoBehaviour
 
     public GameObject bananaPrefab;
 
+    private float speedModifier = 1f;  // Vitesse modifiée lorsqu'on roule sur de l'herbe
+
     void Update()
     {
-        // Récupère les entrées du joueur en fonction de playerIndex
-        string horizontalInput = (playerIndex == 0) ? "Horizontal" : "Horizontal_P2";  // Horizontal pour le joueur 1, Horizontal_P2 pour le joueur 2
-        string verticalInput = (playerIndex == 0) ? "Vertical" : "Vertical_P2";  // Vertical pour le joueur 1, Vertical_P2 pour le joueur 2
-        string boostInput = (playerIndex == 0) ? "Fire1" : "Fire2";  // Fire1 pour le joueur 1, Fire2 pour le joueur 2 (utilise un bouton différent)
-
-        turnInput = Input.GetAxis(horizontalInput);
-        accelerationInput = Input.GetAxis(verticalInput);
+        // Utilisation de GetAxisRaw pour une meilleure réactivité des entrées
+        turnInput = Input.GetAxisRaw(TurnInput);
+        accelerationInput = Input.GetAxisRaw(AccelerateInput);
         brakeInput = (accelerationInput < 0) ? 1f : 0f;
 
-        if (Input.GetKey(KeyCode.LeftShift) && currentSpeed > 0.5f)
+        if (Input.GetButtonDown(driftInput) && currentSpeed > 0.5f)
         {
             isDrifting = true;
             driftDuration = driftTime;
@@ -66,9 +68,10 @@ public class KartController : MonoBehaviour
             }
         }
 
+        // Appliquer l'accélération en tenant compte du modificateur de vitesse
         if (accelerationInput > 0 && !isBoosting)
         {
-            currentSpeed += acceleration * Time.deltaTime;
+            currentSpeed += acceleration * Time.deltaTime * speedModifier;  // Vitesse modifiée par le terrain
         }
         else if (brakeInput > 0)
         {
@@ -80,12 +83,12 @@ public class KartController : MonoBehaviour
         }
 
         // Appliquer le boost et la banane selon les entrées
-        if (hasBoost && Input.GetButtonDown(boostInput))
+        if (hasBoost && Input.GetButtonDown(FireInput))
         {
             StartCoroutine(UseBoost());
         }
 
-        if (hasBanana && Input.GetButtonDown(boostInput))
+        if (hasBanana && Input.GetButtonDown(FireInput))
         {
             DropBanana();
         }
@@ -178,5 +181,11 @@ public class KartController : MonoBehaviour
         isSpinningOut = true;
         spinOutTime = spinOutDuration;
         currentSpeed = 0f;
+    }
+
+    // Méthode pour changer la vitesse en fonction du terrain (herbe ou normal)
+    public void SetSpeedModifier(float modifier)
+    {
+        speedModifier = modifier;  // Modifie le multiplicateur de vitesse (par exemple, 0.5 pour ralentir)
     }
 }
